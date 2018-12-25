@@ -25,12 +25,12 @@ the proxy.json example :
     "logfile":"/var/log/socket-proxy/proxy.log",
     "proxy":[
         {
-            "socket":"/home/data/socket/gitlab.sock",
-            "docker":"gitlab",
-            "port":"80"
+            "socket":"./redis.socket",
+            "docker_addr":"127.0.0.1:6379"
         }
     ]
 }
+
 ```
 
 the nginx configuration example :
@@ -56,4 +56,3 @@ server {
     error_log /var/log/nginx/gitlab_error.log;
 }
 ```
-

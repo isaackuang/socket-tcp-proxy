@@ -1,0 +1,9 @@
+{
+    "logfile":"/var/log/socket-proxy/proxy.log",
+    "proxy":[
+        {
+            "socket":"/var/run/redis.socket",
+            "docker_addr":"172.22.3.162:6379"
+        }
+    ]
+}

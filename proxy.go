@@ -13,8 +13,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"syscall"
-
-	docker "github.com/fsouza/go-dockerclient"
 )
 
 //compiler-settable version
@@ -29,9 +27,7 @@ type Conf struct {
 }
 
 type Proxy struct {
-	Docker   string `json:"docker"`
 	Socket   string `json:"socket"`
-	Port     string `json:"port"`
 	DockerIp string `json:"docker_ip"`
 	//store ip like 172.1.1.1
 	DockerAddr string `json:"docker_addr"`
@@ -94,11 +90,9 @@ var conf Conf
 var configFilePath string
 var debug bool
 
-var dockerclient *docker.Client
-
 func init() {
 	debug = (runtime.GOOS == "darwin")
-	configFilePath = "/etc/socket-proxy/proxy.json"
+	configFilePath = "/etc/sysconfig/proxy.json"
 	jsonString, err := ReadToString(configFilePath)
 	if err != nil {
 		if !debug {
@@ -106,13 +100,6 @@ func init() {
 		}
 	}
 	json.Unmarshal([]byte(jsonString), &conf)
-
-	dockerclient, err = docker.NewClientFromEnv()
-	if err != nil {
-		if !debug {
-			log.Fatal(err)
-		}
-	}
 
 	//fire on the fly
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -129,17 +116,6 @@ func main() {
 		log.SetOutput(logFile)
 	}
 	defer logFile.Close()
-
-	for k, v := range conf.Proxy {
-		name, err := dockerclient.InspectContainer(v.Docker)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(v.Docker, name.NetworkSettings.IPAddress)
-		v.DockerIp = name.NetworkSettings.IPAddress
-		v.DockerAddr = name.NetworkSettings.IPAddress + ":" + v.Port
-		conf.Proxy[k] = v
-	}
 
 	log.Println(conf.Proxy)
 	for _, v := range conf.Proxy {
@@ -158,4 +134,3 @@ func main() {
 	log.Println("Closed listener signal")
 	os.Exit(0)
 }
-
